@@ -23,3 +23,16 @@ The local JSON API provides:
 
 API errors return `{ "error": "..." }` with an appropriate HTTP status.
 The server listens on `127.0.0.1` only.
+
+## Standards demo
+
+A small system analogous to Every's Checks (not integrated with it). Standards are
+facts (`kind:standard`, a yes/no question; version = fact version). `mem score`
+has a judge (`--judge` / `MEM_JUDGE`: `claude`, `codex`, or offline `mock`) answer each
+standard per output and stores `kind:score` facts linked to the output and standard,
+stamped with standard id + version and judge. `mem verdict wrong <scoreId> --note ...`
+drafts a `kind:proposal`; `mem proposal accept <id>` bumps the standard, rescores it
+and records it all in one commit (`mem undo <change>` reverts it); `mem proposal reject <id>`
+discards it. Commands: `mem standard add|list`, `mem score`, `mem scores [--table]`.
+
+Run `npm run demo` (offline, mock) or `JUDGE=claude ./demo/run-demo.sh` (real CLIs).

@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo": "npm run build --silent && bash demo/run-demo.sh"
   },
   "license": "MIT",
   "dependencies": {

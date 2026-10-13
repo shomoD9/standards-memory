@@ -2,6 +2,8 @@
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Command, CommanderError } from "commander";
+import { createJudge } from "./providers.js";
+import { Standards, demoDir, loadDataset, renderTable } from "./standards.js";
 import { Store } from "./store.js";
 
 export interface CliIO {
@@ -105,6 +107,94 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
       const f = s().get(id);
       if (!f) throw new Error(`No such fact: ${id}`);
       io.out(JSON.stringify({ ...f, backlinks: s().links(id).incoming }, null, 2));
+    });
+
+  const judgeOpt = ["--judge <name>", "judge provider: claude | codex | mock (default: $MEM_JUDGE or mock)"] as const;
+  const std = (o: { judge?: string }) => new Standards(s(), createJudge(o.judge));
+
+  const standard = program.command("standard").description("Manage standards (yes/no questions)");
+  standard
+    .command("add <question>")
+    .description("Add a standard, or reword an existing one with --id (bumps its version)")
+    .option("--id <id>")
+    .option("--scope <scope>", "only apply to dataset a (prompts) or b (documents)")
+    .action((q: string, o) => {
+      const r = std({}).addStandard(q, o);
+      io.out(`${r.id} v${r.version}: ${r.question}`);
+    });
+  standard
+    .command("list")
+    .description("List standards")
+    .action(() => {
+      const all = std({}).listStandards();
+      if (!all.length) io.out("(none)");
+      for (const x of all) io.out(`${x.id}\tv${x.version}\t${x.scope ?? "all"}\t${x.question}`);
+    });
+
+  program
+    .command("score")
+    .description("Generate/ingest outputs and score them against all standards")
+    .option("--models <list>", "comma-separated models for prompt datasets", "claude,codex")
+    .option("--dataset <path>", "prompts .json or directory of documents (repeatable; default: bundled demo sets)", collect, [] as string[])
+    .option(...judgeOpt)
+    .action(async (o) => {
+      const d = demoDir();
+      const specs: string[] = o.dataset.length ? o.dataset : [`${d}/prompts.json`, `${d}/sample-docs`];
+      const models = String(o.models).split(",").map((m) => m.trim()).filter(Boolean);
+      const x = std(o);
+      const outputs = await x.collectOutputs(specs.flatMap(loadDataset), models);
+      const r = await x.score(outputs);
+      io.out(`scored with ${x.judge.name}: ${r.written} written, ${r.skipped} already current`);
+    });
+
+  program
+    .command("scores")
+    .description("Show scores")
+    .option("--table", "matrix of outputs x standards")
+    .option("--standard <id>", "only this standard")
+    .action((o) => {
+      const all = std({}).listScores().filter((x) => !o.standard || x.standardId === o.standard);
+      if (o.table) return io.out(renderTable(all));
+      if (!all.length) io.out("(no scores)");
+      for (const x of all) {
+        io.out(`${x.id}\t${x.verdict}\tstd ${x.standardId}@v${x.standardVersion}${x.current ? "" : " (stale)"}\tjudge ${x.judge}\t${x.reason}`);
+      }
+    });
+
+  program
+    .command("verdict")
+    .description("Challenge a verdict")
+    .command("wrong <scoreId>")
+    .description("Mark a score wrong; the judge drafts a revised standard as a proposal")
+    .option("--note <text>", "why the verdict is wrong")
+    .option(...judgeOpt)
+    .action(async (id: string, o) => {
+      const p = await std(o).markWrong(id, o.note);
+      io.out(`proposal ${p.id} (pending)\n  was: ${p.original}\n  now: ${p.revised}`);
+    });
+
+  const proposal = program.command("proposal").description("Review proposed standard rewordings");
+  proposal
+    .command("list")
+    .description("List proposals")
+    .action(() => {
+      const all = std({}).listProposals();
+      if (!all.length) io.out("(none)");
+      for (const p of all) io.out(`${p.id}\t${p.status}\t${p.standardId}\t${p.revised}`);
+    });
+  proposal
+    .command("accept <id>")
+    .description("Apply the revision (standard version bump) and rescore; undo with `mem undo <change>`")
+    .option(...judgeOpt)
+    .action(async (id: string, o) => {
+      const r = await std(o).accept(id);
+      io.out(`accepted ${id}: ${r.standard.id} now v${r.standard.version}, rescored ${r.rescored} change ${r.change}`);
+    });
+  proposal
+    .command("reject <id>")
+    .description("Reject the proposal; the standard is unchanged")
+    .action((id: string) => {
+      io.out(`rejected ${id} change ${std({}).reject(id).change}`);
     });
 
   program

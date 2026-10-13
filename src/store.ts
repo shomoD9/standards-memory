@@ -149,7 +149,7 @@ export class Store {
     return parseFact(readFileSync(file, "utf8"));
   }
 
-  remember(input: RememberInput): RememberResult {
+  private prepare(input: RememberInput): { fact: Fact; created: boolean } {
     const id = input.id ?? `fact-${randomBytes(4).toString("hex")}`;
     const existing = this.get(id);
     const fact: Fact = {
@@ -166,16 +166,35 @@ export class Store {
     if (tags) fact.tags = tags;
     if (kind) fact.kind = kind;
     for (const l of fact.links) validateId(l);
+    return { fact, created: !existing };
+  }
 
-    const rel = this.path(id);
+  private write(fact: Fact): string {
+    const rel = this.path(fact.id);
     writeFileSync(join(this.dir, rel), serialize(fact), "utf8");
     this.git(["add", "--", rel]);
+    return rel;
+  }
+
+  remember(input: RememberInput): RememberResult {
+    const { fact, created } = this.prepare(input);
+    const rel = this.write(fact);
     const change = this.commit(
       [rel],
-      `${existing ? "update" : "remember"} ${id} (v${fact.version})`,
+      `${created ? "remember" : "update"} ${fact.id} (v${fact.version})`,
       fact.author,
     );
-    return { fact, change, created: !existing };
+    return { fact, change, created };
+  }
+
+  /** Writes several facts in one commit, so a single undo reverts all of them. */
+  rememberMany(inputs: RememberInput[], message: string, author = "unknown"): { facts: Fact[]; change: string } {
+    if (!inputs.length) throw new Error("Nothing to remember");
+    const prepared = inputs.map((i) => this.prepare(i));
+    const ids = prepared.map((p) => p.fact.id);
+    if (new Set(ids).size !== ids.length) throw new Error("Duplicate fact ids in batch");
+    const rels = prepared.map((p) => this.write(p.fact));
+    return { facts: prepared.map((p) => p.fact), change: this.commit(rels, message, author) };
   }
 
   list(): Fact[] {

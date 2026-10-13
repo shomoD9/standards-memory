@@ -1,0 +1,5 @@
+[
+  { "id": "onboarding", "prompt": "Explain how a new engineer should get productive in their first week." },
+  { "id": "rest-vs-graphql", "prompt": "Should a small team building an internal tool pick REST or GraphQL?" },
+  { "id": "weekly-update", "prompt": "Draft advice for writing a good weekly status update." }
+]
