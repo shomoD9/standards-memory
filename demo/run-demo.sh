@@ -21,7 +21,7 @@ mem standard add "Does it cite only verified sources?" --id verified-sources --s
 mem standard add "Does code ship with tests? (n/a when no code is involved)" --id code-has-tests --scope b
 mem standard add "Does it state an explicit next action or decision?" --id next-action --scope b
 
-step "2. Score dataset A (3 prompts x claude, codex) and dataset B (team docs)"
+step "2. Score dataset A (3 prompts x claude, codex) and dataset B (sample docs)"
 mem score --models claude,codex --dataset "$ROOT/demo/prompts.json" --dataset "$ROOT/demo/sample-docs"
 
 step "3. Scores (pass / FAIL / - not applicable; vN = standard version; judge=name)"

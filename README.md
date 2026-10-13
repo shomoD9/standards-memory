@@ -101,7 +101,9 @@ Two bundled datasets:
 - **A — model prompts:** [demo/prompts.json](demo/prompts.json), three tasks about
   engineer onboarding, REST versus GraphQL, and weekly updates, run through
   Claude and Codex (simulated in mock mode).
-- **B — sample documents:** [demo/sample-docs/](demo/sample-docs/), fictional sample documents.
+- **B — sample documents:** [demo/sample-docs/](demo/sample-docs/), four fictional
+  documents for a made-up company, "Acme Notes": a product brief, a review of that
+  brief, a project scope, and a few backlog tickets. All content is invented.
 
 ```sh
 npm run demo                         # offline mock judge and simulated models

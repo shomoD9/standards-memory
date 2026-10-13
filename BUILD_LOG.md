@@ -25,3 +25,4 @@ Every score now displays both standard version and judge name, e.g. `FAIL v2 · 
 ## 2026-10-13 (evals): Checks-style evals
 
 Checks-style evals written by Claude Code, directed by Duck Bot.
+Scrub for public release: internal demo docs replaced with fictional samples and history rewritten (written by Claude Code, directed by Duck Bot).
