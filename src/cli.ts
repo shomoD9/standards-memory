@@ -108,6 +108,18 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
     });
 
   program
+    .command("web")
+    .description("Open the local web view")
+    .option("--port <port>", "listen port", "4747")
+    .action(async (o) => {
+      if (!/^\d+$/.test(o.port)) throw new Error("Invalid port");
+      const { startWeb } = await import("./web.js");
+      const server = await startWeb(s(), Number(o.port));
+      const address = server.address();
+      io.out(`Memory web view: http://127.0.0.1:${typeof address === "object" && address ? address.port : o.port}`);
+    });
+
+  program
     .command("mcp")
     .description("Run the MCP server on stdio")
     .action(async () => {
@@ -129,6 +141,6 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
 const self = fileURLToPath(import.meta.url);
 if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(self)) {
   run(process.argv.slice(2)).then((code) => {
-    if (process.argv[2] !== "mcp") process.exit(code);
+    if (code !== 0 || !["mcp", "web"].includes(process.argv[2])) process.exit(code);
   });
 }

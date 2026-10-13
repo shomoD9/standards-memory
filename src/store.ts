@@ -46,6 +46,13 @@ export interface RecallHit {
   score: number;
 }
 
+export interface ChangeEntry {
+  change: string;
+  timestamp: string;
+  author: string;
+  message: string;
+}
+
 export interface Graph {
   nodes: { id: string; exists: boolean }[];
   edges: { from: string; to: string }[];
@@ -204,6 +211,7 @@ export class Store {
 
   history(id: string): HistoryEntry[] {
     const rel = this.path(id);
+    if (!this.log(1).length) return [];
     const out = this.git(["log", "--format=%H%x1f%aI%x1f%an%x1f%s%x1e", "--", rel]);
     const entries: HistoryEntry[] = [];
     for (const rec of out.split("\x1e")) {
@@ -219,6 +227,21 @@ export class Store {
       entries.push({ change, timestamp, author, message, fact });
     }
     return entries;
+  }
+
+  /** Most recent commits, newest first (including undo commits). */
+  log(limit = 50): ChangeEntry[] {
+    if (!Number.isInteger(limit) || limit < 1) throw new Error("Invalid log limit");
+    try {
+      this.git(["rev-parse", "--verify", "HEAD"]);
+    } catch {
+      return [];
+    }
+    return this.git(["log", `-${limit}`, "--format=%H%x1f%aI%x1f%an%x1f%s%x1e"])
+      .split("\x1e").map((r) => r.trim()).filter(Boolean).map((r) => {
+        const [change, timestamp, author, message] = r.split("\x1f");
+        return { change, timestamp, author, message };
+      });
   }
 
   forget(id: string, author = "unknown"): string {
