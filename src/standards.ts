@@ -343,6 +343,10 @@ export class Standards {
 
 const CELL: Record<Verdict, string> = { pass: "pass", fail: "FAIL", na: "-" };
 
+/** The canonical score display, e.g. "FAIL v2 · judge=codex". */
+export const scoreStamp = (s: Pick<ScoreRecord, "verdict" | "standardVersion" | "judge">) =>
+  `${CELL[s.verdict]} v${s.standardVersion} · judge=${s.judge}`;
+
 /** Outputs as rows, standards as columns; each cell is the verdict plus the standard version it was scored at. */
 export function renderTable(scores: (ScoreRecord & { current: boolean })[]): string {
   if (!scores.length) return "(no scores)";
@@ -351,7 +355,7 @@ export function renderTable(scores: (ScoreRecord & { current: boolean })[]): str
   const cell = (r: string, c: string) => {
     const s = scores.find((x) => x.outputId === r && x.standardId === c);
     if (!s) return "";
-    return s.verdict === "na" ? "-" : `${CELL[s.verdict]} v${s.standardVersion}${s.current ? "" : "*"}`;
+    return `${scoreStamp(s)}${s.current ? "" : "*"}`;
   };
   const header = ["output", ...cols.map((c) => c.replace(/^std-/, ""))];
   const body = rows.map((r) => [r.replace(/^out-/, ""), ...cols.map((c) => cell(r, c))]);

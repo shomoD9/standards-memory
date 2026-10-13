@@ -24,11 +24,11 @@ mem standard add "Does it state an explicit next action or decision?" --id next-
 step "2. Score dataset A (3 prompts x claude, codex) and dataset B (team docs)"
 mem score --models claude,codex --dataset "$ROOT/demo/prompts.json" --dataset "$ROOT/demo/sample-docs"
 
-step "3. Scores (pass / FAIL / - not applicable; vN = standard version)"
+step "3. Scores (pass / FAIL / - not applicable; vN = standard version; judge=name)"
 mem scores --table
 
 step "4. Mark a verdict wrong: a wordy answer that failed the 100-word limit was fine"
-SCORE="$(mem scores --standard words-100 | awk -F'\t' '$2=="fail"{print $1; exit}')"
+SCORE="$(mem scores --standard words-100 | awk -F'\t' '$2 ~ /^FAIL/{print $1; exit}')"
 [ -n "$SCORE" ] || { echo "no failing words-100 score to dispute"; exit 1; }
 mem scores --standard words-100 | grep "^$SCORE"
 PROP_OUT="$(mem verdict wrong "$SCORE" --note "explanations may run up to 150 words")"

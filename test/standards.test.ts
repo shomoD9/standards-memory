@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { run } from "../src/cli.js";
 import { createGenerator, createJudge, parseJudgement, type Runner } from "../src/providers.js";
-import { Standards, loadDataset, renderTable } from "../src/standards.js";
+import { Standards, loadDataset, renderTable, scoreStamp } from "../src/standards.js";
 import { tempStore } from "./helpers.js";
 
 const setup = () => {
@@ -123,13 +123,24 @@ describe("standards flow", () => {
     expect(x.getProposal(p.id).status).toBe("pending");
   });
 
+  it("stamps version and judge in tags, body and display", async () => {
+    const { x } = setup();
+    await x.score(await x.collectOutputs(prompts(), ["claude"]));
+    const f = x.store.list().find((f) => f.kind === "score")!;
+    expect(f.tags).toContain("judge:mock");
+    expect(JSON.parse(f.content).judge).toBe("mock");
+    expect(scoreStamp({ verdict: "fail", standardVersion: 2, judge: "codex" })).toBe("FAIL v2 · judge=codex");
+    expect(scoreStamp({ verdict: "pass", standardVersion: 1, judge: "mock" })).toBe("pass v1 · judge=mock");
+  });
+
   it("renders a table with stale markers", async () => {
     const { x } = setup();
     await x.score(await x.collectOutputs(prompts(), ["claude", "codex"]));
     x.addStandard("Is the answer under 200 words?", { id: "words" });
     const t = renderTable(x.listScores());
     expect(t).toContain("prompt-p1-claude");
-    expect(t).toContain("FAIL v1*");
+    expect(t).toContain("FAIL v1 · judge=mock*");
+    expect(t).toContain("pass v1 · judge=mock");
     expect(t).toContain("stale");
   });
 
@@ -153,13 +164,13 @@ describe("cli: standards", () => {
     expect(await cli("standard", "add", "Is the answer under 100 words?", "--id", "words")).toContain("words v1");
     expect(await cli("standard", "list")).toContain("words\tv1");
     expect(await cli("score", "--judge", "mock", "--models", "claude,codex", "--dataset", ds)).toContain("6 written");
-    expect(await cli("scores")).toContain("fail");
+    expect(await cli("scores")).toMatch(/FAIL v1 · judge=mock/);
     expect(await cli("scores", "--table")).toContain("prompt-onboarding-claude");
 
     const prop = (await cli("verdict", "wrong", "score-out-prompt-onboarding-claude--words", "--note", "150 ok")).match(/proposal (\S+)/)![1];
     const acc = await cli("proposal", "accept", prop);
     expect(acc).toContain("words now v2");
-    expect(await cli("scores", "--standard", "words")).toContain("words@v2");
+    expect(await cli("scores", "--standard", "words")).toContain("v2 · judge=mock");
     await cli("undo", acc.match(/change (\w+)/)![1]);
     expect(await cli("proposal", "list")).toContain("pending");
     expect(await cli("standard", "list")).toContain("words\tv1");

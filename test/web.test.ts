@@ -33,6 +33,15 @@ describe("web API", () => {
     expect(await get("/api/graph")).toEqual({ nodes: [], edges: [], backlinks: {} });
   });
 
+  it("page renders score stamps with version and judge", async () => {
+    const html = await (await request("/")).text();
+    expect(html).toContain("function stamp(f)");
+    expect(html).toContain("' · judge='");
+    store.remember({ id: "score-x", kind: "score", content: JSON.stringify({ verdict: "fail", standardVersion: 2, judge: "codex" }), tags: ["judge:codex"] });
+    const f = await get("/api/facts/score-x");
+    expect(f.tags).toContain("judge:codex");
+  });
+
   it("lists, searches, gets details and backlinks, history, graph and commits", async () => {
     store.remember({ id: "a", content: "First apple", links: ["b", "ghost"] });
     store.remember({ id: "b", content: "Banana" });

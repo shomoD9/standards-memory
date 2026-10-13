@@ -3,7 +3,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Command, CommanderError } from "commander";
 import { createJudge } from "./providers.js";
-import { Standards, demoDir, loadDataset, renderTable } from "./standards.js";
+import { Standards, demoDir, loadDataset, renderTable, scoreStamp } from "./standards.js";
 import { Store } from "./store.js";
 
 export interface CliIO {
@@ -157,7 +157,7 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
       if (o.table) return io.out(renderTable(all));
       if (!all.length) io.out("(no scores)");
       for (const x of all) {
-        io.out(`${x.id}\t${x.verdict}\tstd ${x.standardId}@v${x.standardVersion}${x.current ? "" : " (stale)"}\tjudge ${x.judge}\t${x.reason}`);
+        io.out(`${x.id}\t${scoreStamp(x)}${x.current ? "" : " (stale)"}\tstd ${x.standardId}\t${x.reason}`);
       }
     });
 
