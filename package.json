@@ -1,0 +1,29 @@
+{
+  "name": "standards-memory",
+  "version": "0.1.0",
+  "description": "Git-backed shared fact store for agent teams",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "mem": "dist/cli.js",
+    "mem-mcp": "dist/mcp-bin.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "commander": "^15.0.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  }
+}
