@@ -1,0 +1,5 @@
+id: no-filler
+description: Does the summary avoid the phrase "in conclusion"?
+kind: code
+rule:
+  not-contains: "in conclusion"

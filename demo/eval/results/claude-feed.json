@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-10-13T15:43:51.764Z",
+  "overall": {
+    "score": 0.6944444444444444,
+    "judge": "claude",
+    "checksVersions": {
+      "emails": 1,
+      "summaries": 1
+    }
+  },
+  "tasks": [
+    {
+      "task": "emails",
+      "score": 0.5,
+      "checksVersion": 1,
+      "judge": "claude",
+      "cases": [
+        {
+          "case": "invite",
+          "runId": "run-emails--invite-1",
+          "seq": 1,
+          "score": 1,
+          "passed": 2,
+          "applicable": 2
+        },
+        {
+          "case": "reminder",
+          "runId": "run-emails--reminder-1",
+          "seq": 1,
+          "score": 0,
+          "passed": 0,
+          "applicable": 2
+        }
+      ]
+    },
+    {
+      "task": "summaries",
+      "score": 0.8888888888888888,
+      "checksVersion": 1,
+      "judge": "claude",
+      "cases": [
+        {
+          "case": "planning",
+          "runId": "run-summaries--planning-1",
+          "seq": 1,
+          "score": 1,
+          "passed": 3,
+          "applicable": 3
+        },
+        {
+          "case": "retro",
+          "runId": "run-summaries--retro-1",
+          "seq": 1,
+          "score": 0.6666666666666666,
+          "passed": 2,
+          "applicable": 3
+        },
+        {
+          "case": "standup",
+          "runId": "run-summaries--standup-1",
+          "seq": 1,
+          "score": 1,
+          "passed": 4,
+          "applicable": 4
+        }
+      ]
+    }
+  ]
+}

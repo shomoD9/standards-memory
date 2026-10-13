@@ -1,0 +1,5 @@
+id: greeting
+description: Does the email open with a greeting?
+kind: code
+rule:
+  regex: "^(hi|hello|dear)\\b"

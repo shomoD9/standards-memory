@@ -1,0 +1,7 @@
+id: names-owner
+description: Does the summary name an owner for each action item?
+kind: code
+applies-when:
+  contains: "action"
+rule:
+  regex: "owner:|assigned to"

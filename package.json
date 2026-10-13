@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "demo": "npm run build --silent && bash demo/run-demo.sh"
+    "demo": "npm run build --silent && bash demo/run-demo.sh",
+    "eval:demo": "npm run build --silent && bash demo/eval/run.sh"
   },
   "license": "MIT",
   "dependencies": {

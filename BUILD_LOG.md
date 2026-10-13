@@ -21,3 +21,7 @@ Observations: with real generators, every answer failed "under 100 words" at v1 
 ## 2026-10-13 (later still): score stamps
 
 Every score now displays both standard version and judge name, e.g. `FAIL v2 · judge=codex` / `pass v1 · judge=mock`, in `mem scores`, the table, demo output and the web view. Written by Claude Code, directed by Duck Bot.
+
+## 2026-10-13 (evals): Checks-style evals
+
+Checks-style evals written by Claude Code, directed by Duck Bot.

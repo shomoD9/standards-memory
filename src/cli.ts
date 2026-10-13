@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { realpathSync } from "node:fs";
+import { realpathSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Command, CommanderError } from "commander";
+import { Evals, loadCases, loadChecks, renderEvalTable } from "./evals.js";
 import { createJudge } from "./providers.js";
 import { Standards, demoDir, loadDataset, renderTable, scoreStamp } from "./standards.js";
 import { Store } from "./store.js";
@@ -195,6 +196,23 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
     .description("Reject the proposal; the standard is unchanged")
     .action((id: string) => {
       io.out(`rejected ${id} change ${std({}).reject(id).change}`);
+    });
+
+  program
+    .command("eval")
+    .description("Run Checks-style evals: cases through code checks and the judge; prints a table and writes a JSON feed")
+    .option("--checks <dir>", "checks directory (<task>/*.yaml)", "checks")
+    .option("--cases <file>", "JSON array of {task, case, output}")
+    .option("--feed <path>", "JSON feed output path", "eval-feed.json")
+    .option(...judgeOpt)
+    .action(async (o) => {
+      if (!o.cases) throw new Error("--cases <file> is required");
+      const e = new Evals(s(), createJudge(o.judge));
+      await e.evaluate(loadCases(o.cases), loadChecks(o.checks));
+      const sum = e.summary();
+      writeFileSync(o.feed, JSON.stringify(sum, null, 2) + "\n");
+      io.out(renderEvalTable(sum));
+      io.out(`feed: ${o.feed}`);
     });
 
   program

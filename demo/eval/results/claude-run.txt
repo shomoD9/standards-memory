@@ -1,0 +1,11 @@
+task       case              score
+---------  ----------------  --------------------------------------------------
+emails     invite (run 1)    100% (2/2) · checks=v1 · judge=claude
+emails     reminder (run 1)  0% (0/2) · checks=v1 · judge=claude
+emails     TASK              50% · checks=v1 · judge=claude
+summaries  planning (run 1)  100% (3/3) · checks=v1 · judge=claude
+summaries  retro (run 1)     67% (2/3) · checks=v1 · judge=claude
+summaries  standup (run 1)   100% (4/4) · checks=v1 · judge=claude
+summaries  TASK              89% · checks=v1 · judge=claude
+ALL        OVERALL           69% · checks=emails:v1,summaries:v1 · judge=claude
+feed: demo/eval/results/claude-feed.json

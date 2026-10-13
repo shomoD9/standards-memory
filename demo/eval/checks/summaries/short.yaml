@@ -1,0 +1,5 @@
+id: short
+description: Is the summary at most 40 words?
+kind: code
+rule:
+  max-words: 40

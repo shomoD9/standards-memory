@@ -133,6 +133,30 @@ prompts and `b` to documents; omit it for both. `score` defaults to the bundled
 datasets; repeat `--dataset <path>` for prompt JSON files or document directories.
 Judge selection uses `--judge` or `MEM_JUDGE`: `mock` (default), `claude`, or `codex`.
 
+## Evals (inspired by Every's Checks, not an integration)
+
+Not affiliated with Every or Checks. Checks are files, `checks/<task>/*.yaml`, with
+`id`, `description`, `kind` (`code` or `judge`), and an optional `applies-when`
+condition. A code check also has a `rule`: one of `contains`, `not-contains`,
+`regex` (case-insensitive), `max-words`, or `min-words`. `applies-when` takes the
+same shape and is tested against the output; a check whose condition fails is not
+applicable. Judge checks send the description to the judge as a yes/no question
+(a judge `na` also means not applicable).
+
+```sh
+mem eval --checks checks --cases cases.json --judge mock --feed eval-feed.json
+npm run eval:demo        # demo/eval, mock judge, temp store
+```
+
+`cases.json` is an array of `{task, case, output}`. Each task's checks are recorded
+as a `checks-<task>` fact, so the checks version is its fact version, bumped only
+when the definitions change (same mechanism as standards). Each run is stored as an
+`eval-run` fact. Run score = checks passed / checks that apply. Each case is scored
+by its latest run; task score = mean of its cases; overall = mean of tasks (cases
+and tasks with no applicable checks are skipped). Every score shows
+`checks=vN · judge=name`. Output is a table on stdout and a JSON feed
+(`--feed`, default `eval-feed.json`). Judge selection is `--judge` or `MEM_JUDGE`.
+
 ## Not in v0
 
 Embeddings or vector search, hosting, multi-user support, and authentication.

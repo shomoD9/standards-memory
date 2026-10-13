@@ -1,0 +1,7 @@
+[
+  {"task": "summaries", "case": "standup", "output": "The team shipped the login page. One action item remains: fix the timeout bug (owner: Sam). Next step is review on Friday."},
+  {"task": "summaries", "case": "retro", "output": "I think the sprint went well, perhaps. In conclusion, we should keep the same cadence."},
+  {"task": "summaries", "case": "planning", "output": "Scope agreed for the release; no open questions."},
+  {"task": "emails", "case": "invite", "output": "Hello team, please confirm your attendance by Thursday. Next step: we decide the venue on Friday."},
+  {"task": "emails", "case": "reminder", "output": "Quick reminder that invoices are due."}
+]
