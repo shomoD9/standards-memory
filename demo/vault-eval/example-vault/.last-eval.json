@@ -1,0 +1,20 @@
+{
+  "vault": "example-vault",
+  "draft": "draft-previous.md",
+  "judge": "mock",
+  "date": "2026-09-20",
+  "passed": 5,
+  "applicable": 5,
+  "score": 1,
+  "blocked": false,
+  "criticalFailures": [],
+  "regressions": [],
+  "results": [
+    { "id": "no-guarantee-claims", "severity": "critical", "verdict": "pass", "criterion": "", "reason": "", "regression": false },
+    { "id": "no-internal-codenames", "severity": "critical", "verdict": "pass", "criterion": "", "reason": "", "regression": false },
+    { "id": "no-hedging", "severity": "normal", "verdict": "pass", "criterion": "", "reason": "", "regression": false },
+    { "id": "names-next-step", "severity": "normal", "verdict": "pass", "criterion": "", "reason": "", "regression": false },
+    { "id": "intro-is-short", "severity": "normal", "verdict": "pass", "criterion": "", "reason": "", "regression": false }
+  ],
+  "tokenCost": null
+}

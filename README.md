@@ -156,6 +156,61 @@ and tasks with no applicable checks are skipped). Every score shows
 `checks=vN · judge=name`. Output is a table on stdout and a JSON feed
 (`--feed`, default `eval-feed.json`). Judge selection is `--judge` or `MEM_JUDGE`.
 
+## Vault checks.md and the draft grader
+
+A separate, generic subsystem for agent vaults (a vault is just a directory). It
+is distinct from the per-task `checks/<task>/*.yaml` evals above. Demo content is
+fictional (an "Acme Notes" writer agent) under `demo/vault-eval/`.
+
+**checks.md.** Each check is a fenced `check` block of YAML inside Markdown, so
+people and agents can edit it by hand. Fields: `id` (stable slug), `severity`
+(`critical` or `normal`), `date` (ISO), `correction` (the reviewer's original
+note), `criterion` (a yes/no question where "yes" means the draft is fine), and an
+optional `rule` (one of `contains`, `not-contains`, `regex`, `max-words`,
+`min-words`) that code evaluates instead of the judge. Start from
+`demo/vault-eval/template/checks.md`; a filled example is in
+`demo/vault-eval/example-vault/`.
+
+**Corrections to checks.**
+
+```sh
+mem vault-check add --vault my-vault --from corrections.md   # or pipe stdin
+```
+
+Each bullet (or blank-line separated paragraph) becomes one check. A leading
+`[critical]` or `critical:` sets severity; the default is `normal`. Ids come from
+the correction text; a correction that already has a check is skipped, and an id
+clash gets a short hash suffix. `--judge mock` (the default) phrases the criterion
+with a plain heuristic, offline. `--judge claude|codex` asks a model to phrase it.
+
+**Runner.**
+
+```sh
+mem vault-eval --vault my-vault --draft draft.md      # or --draft - / stdin
+```
+
+It grades the draft against all checks and prints PASS/FAIL/NA per check plus
+`score: passed/applicable`. The judge is Codex (`codex exec`) by default; use
+`--judge mock|codex|claude` or `MEM_VAULT_JUDGE`. The JSON report goes to
+`--report` (default `<vault>/.last-eval.json`) and has a `tokenCost` placeholder
+(`null`; nothing is counted).
+
+**Critical blocking.** If any `critical` check fails, the draft is `blocked`
+whatever the score is. The output and JSON show `blocked: true` and
+`criticalFailures`, and the exit code is 2. Otherwise it is 0.
+
+**Lessons and regressions.** Each failed check appends a short entry to
+`<vault>/lessons.md`: check id, criterion, and a one-line note (`--no-lessons`
+skips this). Grader reasoning is not shown in the table. If the prior report
+(`<vault>/.last-eval.json`, or `--prior <path>`) had a check passing and it now
+fails, it is flagged `regression: true` and listed under `regressions`.
+
+```sh
+npm run vault-eval:demo   # mock judge on a temp copy of the example vault; ends blocked, exit 2 from the CLI
+```
+
+The mock judge is keyword-based, so it is only good enough for the demo and tests.
+
 ## Not in v0
 
 Embeddings or vector search, hosting, multi-user support, and authentication.

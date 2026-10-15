@@ -1,9 +1,21 @@
 #!/usr/bin/env node
-import { realpathSync, writeFileSync } from "node:fs";
+import { readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command, CommanderError } from "commander";
 import { Evals, loadCases, loadChecks, renderEvalTable } from "./evals.js";
 import { createJudge } from "./providers.js";
+import {
+  LAST_EVAL_FILE,
+  addChecks,
+  appendLessons,
+  gradeDraft,
+  loadReport,
+  loadVaultChecks,
+  parseCorrections,
+  renderVaultReport,
+  vaultJudgeName,
+} from "./vault-eval.js";
 import { Standards, demoDir, loadDataset, renderTable, scoreStamp } from "./standards.js";
 import { Store } from "./store.js";
 
@@ -215,6 +227,55 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
       io.out(`feed: ${o.feed}`);
     });
 
+  const vaultJudgeOpt = ["--judge <name>", "judge: codex | claude | mock (default: $MEM_VAULT_JUDGE or codex)"] as const;
+  const readInput = async (path?: string) => (!path || path === "-" ? io.readStdin() : readFileSync(path, "utf8"));
+  let exitCode = 0;
+
+  program
+    .command("vault-check")
+    .description("Manage a vault's checks.md")
+    .command("add")
+    .description("Append one check per reviewer correction (from --from file or stdin) to <vault>/checks.md")
+    .requiredOption("--vault <dir>", "agent vault directory")
+    .option("--from <file>", "corrections file, or - for stdin (default: stdin)")
+    .option("--judge <name>", "mock phrases criteria offline; claude | codex phrase them with a model (default: $MEM_JUDGE or mock)")
+    .option("--date <date>", "ISO date to record (default: today)")
+    .action(async (o) => {
+      const corrections = parseCorrections(await readInput(o.from));
+      if (!corrections.length) throw new Error("No corrections found in input");
+      const r = await addChecks(o.vault, corrections, { judge: o.judge, date: o.date });
+      for (const c of r.added) io.out(`added ${c.id} (${c.severity})`);
+      for (const k of r.skipped) io.out(`skipped ${k.id}: ${k.reason}`);
+    });
+
+  program
+    .command("vault-eval")
+    .description("Grade a draft against <vault>/checks.md; exits 2 if any critical check fails (blocked)")
+    .requiredOption("--vault <dir>", "agent vault directory")
+    .option("--draft <file>", "draft file, or - for stdin (default: stdin)")
+    .option("--report <path>", "JSON report path (default: <vault>/.last-eval.json)")
+    .option("--prior <path>", "previous report JSON for regressions (default: <vault>/.last-eval.json)")
+    .option("--no-lessons", "do not append failures to lessons.md")
+    .option(...vaultJudgeOpt)
+    .action(async (o) => {
+      const draft = await readInput(o.draft);
+      const last = join(o.vault, LAST_EVAL_FILE);
+      const prior = loadReport(o.prior ?? last);
+      const judge = createJudge(vaultJudgeName(o.judge));
+      const report = await gradeDraft(loadVaultChecks(o.vault), draft, o.vault, {
+        judge,
+        prior,
+        draftName: o.draft && o.draft !== "-" ? o.draft : undefined,
+      });
+      const json = JSON.stringify(report, null, 2) + "\n";
+      writeFileSync(o.report ?? last, json);
+      if (o.report && o.report !== last) writeFileSync(last, json);
+      const lessons = o.lessons ? appendLessons(o.vault, report) : 0;
+      io.out(renderVaultReport(report));
+      io.out(`report: ${o.report ?? last}${lessons ? ` · ${lessons} lesson(s) appended` : ""}`);
+      if (report.blocked) exitCode = 2;
+    });
+
   program
     .command("web")
     .description("Open the local web view")
@@ -238,7 +299,7 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
 
   try {
     await program.parseAsync(argv, { from: "user" });
-    return 0;
+    return exitCode;
   } catch (e) {
     if (e instanceof CommanderError) return e.exitCode;
     io.err(`error: ${e instanceof Error ? e.message : String(e)}`);

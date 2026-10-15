@@ -73,7 +73,7 @@ const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
 
 // ---- loading ----
 
-function toRule(raw: unknown, where: string): Rule {
+export function toRule(raw: unknown, where: string): Rule {
   if (!raw || typeof raw !== "object") throw new Error(`${where}: expected a rule such as {contains: "text"}`);
   const keys = Object.keys(raw).filter((k) => (RULE_KEYS as readonly string[]).includes(k));
   if (keys.length !== 1 || Object.keys(raw).length !== 1) {

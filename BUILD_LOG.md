@@ -26,3 +26,7 @@ Every score now displays both standard version and judge name, e.g. `FAIL v2 · 
 
 Evals written by Claude Code, directed by Duck Bot.
 Scrub for public release: internal demo docs replaced with fictional samples and history rewritten (written by Claude Code, directed by Duck Bot).
+
+## 2026-10-15 (vault evals): vault checks.md and draft grader
+
+Vault checks.md format (fenced YAML blocks), `mem vault-check add` (corrections to checks), `mem vault-eval` (shared draft runner: Codex judge by default, mock/claude optional), critical-failure blocking with exit code 2, lessons log, regression flags against the prior report, and a `tokenCost` placeholder. Fictional example vault and `npm run vault-eval:demo` under `demo/vault-eval/`. Written by Claude Code, directed by Duck Bot.
