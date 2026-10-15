@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checks-style eval demo in a fresh temp MEM_DIR; offline with the mock judge unless JUDGE is set.
+# Eval demo in a fresh temp MEM_DIR; offline with the mock judge unless JUDGE is set.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP="$(mktemp -d)"

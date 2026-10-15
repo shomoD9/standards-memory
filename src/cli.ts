@@ -200,7 +200,7 @@ export async function run(argv: string[], store?: Store, io: CliIO = defaultIO):
 
   program
     .command("eval")
-    .description("Run Checks-style evals: cases through code checks and the judge; prints a table and writes a JSON feed")
+    .description("Run evals: cases through code checks and the judge; prints a table and writes a JSON feed")
     .option("--checks <dir>", "checks directory (<task>/*.yaml)", "checks")
     .option("--cases <file>", "JSON array of {task, case, output}")
     .option("--feed <path>", "JSON feed output path", "eval-feed.json")

@@ -86,9 +86,6 @@ same `MEM_DIR` and listens only on `127.0.0.1`.
 
 ## Standards demo
 
-**Inspired by, and analogous to, Every's Checks. This is NOT an integration and is
-not affiliated with Every or Checks.**
-
 The demo applies versioned yes/no standards to outputs. Scores are linked facts
 recording pass, fail, or not applicable, a reason, the judge, and the standard ID
 and version. A disputed verdict prompts a proposed standard revision. Accepting
@@ -135,9 +132,9 @@ prompts and `b` to documents; omit it for both. `score` defaults to the bundled
 datasets; repeat `--dataset <path>` for prompt JSON files or document directories.
 Judge selection uses `--judge` or `MEM_JUDGE`: `mock` (default), `claude`, or `codex`.
 
-## Evals (inspired by Every's Checks, not an integration)
+## Evals
 
-Not affiliated with Every or Checks. Checks are files, `checks/<task>/*.yaml`, with
+Checks are files, `checks/<task>/*.yaml`, with
 `id`, `description`, `kind` (`code` or `judge`), and an optional `applies-when`
 condition. A code check also has a `rule`: one of `contains`, `not-contains`,
 `regex` (case-insensitive), `max-words`, or `min-words`. `applies-when` takes the
